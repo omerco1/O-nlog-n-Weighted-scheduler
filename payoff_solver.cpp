@@ -8,32 +8,127 @@
 
 using namespace std;
 
-struct Job {
-    int start, finish, profit;
+//***********
+//Structs
+struct Interval {
+    int start, end, pay;
 };
 
-// A utility function that is used for sorting events
-// according to finish time
-bool myfunction(Job s1, Job s2) {
-    return (s1.finish < s2.finish);
+struct comparator{
+    inline bool operator() (const Interval& inter1, const Interval& inter2) {
+        return (inter1.end < inter2.end);
+    }
+};
+
+//************
+//Methods
+int binarySearch(vector<Interval> Intervals, int index);
+
+//**********
+//MAIN
+int main(int argc, char* argv[]) {
+
+    vector<Interval> intervals;
+    string temp;
+    int max_pay = 0;
+
+  //O(n)
+  for(string line; getline(cin, line) && line.compare("");) {
+      stringstream ss(line);
+      ss >> temp;
+      int start = stoi(temp);
+      ss >> temp;
+      int end = stoi(temp);
+      ss >> temp;
+      int pay = stoi(temp);
+
+      Interval inter;
+      inter.start = start;
+      inter.end = end;
+      inter.pay = pay;
+
+      intervals.push_back(inter);
+  }
+
+  //O(nlogn)
+   sort(intervals.begin(), intervals.end(), comparator());
+
+   int n = intervals.size();
+
+   int *table = new int[n];
+   int *back = new int[n];
+   table[0] = intervals[0].pay;
+   back[0] = -1;
+
+
+   //O(nlogn)
+   for (int i=1; i<n; i++) {
+       int inclProf = intervals[i].pay;
+       //O(logn)
+       int l = binarySearch(intervals, i);
+       if (l != -1) {
+           inclProf += table[l];
+
+       }
+
+       if (inclProf > table[i-1]) {
+         table[i] = inclProf;
+         back[i] = l;
+
+       } else {
+         table[i] = table[i-1];
+         back[i] = -2;
+       }
+   }
+
+   //worst case: O(n)
+   vector<int> sol_vec;
+   for(int i = n-1; i >= 0; i--) {
+     if (back[i] == -2) {
+       continue;
+     }
+     else {
+       sol_vec.push_back(i);
+       if (back[i] == -1) {
+
+         break;
+
+       }
+       i = back[i];
+       i++;
+     }
+   }
+
+   cout << "Max Payoff: " << table[n-1] <<endl;
+
+   //worst case O(nlogn)
+   sort(sol_vec.begin(), sol_vec.end());
+
+   //O(n)
+   for(int i = 0; i < sol_vec.size(); i++) {
+       cout << intervals[sol_vec[i]].start << " " << intervals[sol_vec[i]].end << " " << intervals[sol_vec[i]].pay <<endl;
+   }
+
+
+
+   delete[] table;
+   delete[] back;
+
+   return 0;
 }
 
-int binarySearch(Job jobs[], int index )  //, vector<Job> &sol_vec)
-{
-    // Initialize 'lo' and 'hi' for Binary Search
+int binarySearch(vector<Interval> Intervals, int index) {
     int lo = 0, hi = index - 1;
 
-    // Perform binary Search iteratively
     while (lo <= hi)
     {
         int mid = (lo + hi) / 2;
-        if (jobs[mid].finish <= jobs[index].start)
+        if (Intervals[mid].end <= Intervals[index].start)
         {
-            if (jobs[mid + 1].finish <= jobs[index].start)
+            if (Intervals[mid + 1].end <= Intervals[index].start)
                 lo = mid + 1;
             else {
-                //cout << jobs[mid].start << " " << jobs[mid].finish << jobs[mid].profit <<endl;
-                //sol_vec.push_back(jobs[mid]);
+
                 return mid;
             }
         }
@@ -42,81 +137,4 @@ int binarySearch(Job jobs[], int index )  //, vector<Job> &sol_vec)
     }
 
     return -1; //change to -INF
-}
-
-// The main function that returns the maximum possible
-// profit from given array of jobs
-int findMaxProfit(Job arr[], int n)
-{
-
-    vector<Job> sol_vec;
-
-    sort(arr, arr+n, myfunction);
-
-    int *table = new int[n];
-    table[0] = arr[0].profit;
-
-    for (int i=1; i<n; i++) {
-
-
-        // Find profit including the current job
-        int inclProf = arr[i].profit;
-
-
-        vector<Job> prev_sol(sol_vec);
-        sol_vec.clear();
-
-        sol_vec.push_back(arr[i]);
-
-        int l = binarySearch(arr, i  );   //, sol_vec);
-        if (l != -1) {
-            inclProf += table[l];
-            sol_vec.push_back(arr[l]);
-
-
-
-        }
-        if (inclProf > table[i-1]) {
-
-        } else{
-          sol_vec = prev_sol;
-
-        }
-
-        // Store maximum of including and excluding
-        table[i] = max(inclProf, table[i-1]);
-
-
-    }
-
-    for(int i = 0; i < sol_vec.size(); i++)
-      cout << sol_vec[i].start << " "<< sol_vec[i].finish << " " << sol_vec[i].profit <<endl;
-
-    // Store result and free dynamic memory allocated for table[]
-    int result = table[n-1];
-
-    // cout << "sol_vec is: " <<endl;
-    // for (int i = 0; i < sol_vec.size(); i++) {
-    //   cout << sol_vec[i].start;
-    // }
-
-
-    delete[] table;
-
-    return result;
-}
-
-// Driver program
-int main()
-{
-    Job arr[] = {{3, 10, 20}, {1, 2, 50}, {6, 19, 100}, {2, 100, 200}};
-    int n = sizeof(arr)/sizeof(arr[0]);
-
-
-    cout << "Optimal profit is " << findMaxProfit(arr, n)<<endl;
-    return 0;
-
-
-
-
 }
