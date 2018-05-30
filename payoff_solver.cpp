@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
          payoffs.push_back(curr_prof);
          prev_vec.push_back(ind);
 
-       } else {
+       } else { //ASSUMGING NON NEG INP
          payoffs.push_back(payoffs[i-1]);
          prev_vec.push_back(-1000);
 
