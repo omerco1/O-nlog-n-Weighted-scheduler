@@ -22,7 +22,8 @@ struct comparator{
 
 //************
 //Methods
-int binarySearch(vector<Interval> &Intervals, int index);
+int cust_BinSearch(vector<Interval> &Intervals, int index);
+bool check_Interval(int a, int b) ;
 
 //**********
 //Main
@@ -62,7 +63,7 @@ int main(int argc, char* argv[]) {
    for (int i = 1; i< intervals.size(); i++) {
        int curr_prof = intervals[i].pay;
        //O(logn)
-       ind = binarySearch(intervals, i);
+       ind = cust_BinSearch(intervals, i);
        if (ind!= -1) {
            curr_prof += payoffs[ind];
        }
@@ -109,13 +110,17 @@ int main(int argc, char* argv[]) {
    return 0;
 }
 
-int binarySearch(vector<Interval> &Intervals, int index) {
+bool check_Interval(int a, int b) {
+  return (a<= b);
+}
+
+int cust_BinSearch(vector<Interval> &Intervals, int index) {
     int right = 0;
     int left = index - 1;
 
     while (right <= left) {
         int middle = (right+left)/2;
-        if (Intervals[middle].end <= Intervals[index].start) {
+        if (check_Interval(Intervals[middle].end, Intervals[index].start)) {
             if (Intervals[middle + 1].end <= Intervals[index].start)
                 right = middle + 1;
             else {
